@@ -115,6 +115,10 @@ def inclusion(log_index, artifact_filepath, debug=False):
         print("Signature is valid")
 
         proof = get_verification_proof(log_index)
+        if proof is None:
+            if debug:
+                print("It fails to get verification proof")
+            return False
         uuid = list(proof.keys())[0]  # get the entry key
         entry = proof[uuid]
 
