@@ -1,0 +1,61 @@
+F841 Local variable `f` is assigned to but never used
+  --> main.py:60:47
+   |
+58 |     try:
+59 |         # Check if artifact file exists
+60 |         with open(artifact_filepath, "rb") as f:
+   |                                               ^
+61 |             pass
+62 |     except FileNotFoundError:
+   |
+help: Remove assignment to unused variable `f`
+
+F541 [*] f-string without any placeholders
+   --> main.py:154:23
+    |
+152 |         if not data:
+153 |             if debug:
+154 |                 print(f"No entry found")
+    |                       ^^^^^^^^^^^^^^^^^
+155 |             return None
+156 |         return data
+    |
+help: Remove extraneous `f` prefix
+
+F841 [*] Local variable `e` is assigned to but never used
+   --> main.py:198:25
+    |
+196 |         verify_consistency(DefaultHasher, size1, size2, proof, root1, root2)
+197 |         print("Consistency proof verified successfully!")
+198 |     except Exception as e:
+    |                         ^
+199 |         print("Error: cannot verify consistency")
+200 |     return True
+    |
+help: Remove assignment to unused variable `e`
+
+E741 Ambiguous variable name: `l`
+  --> merkle_proof.py:26:29
+   |
+24 |         return h.digest()
+25 |
+26 |     def hash_children(self, l, r):
+   |                             ^
+27 |         h = self.new()
+28 |         b = bytes([RFC6962_NODE_HASH_PREFIX]) + l + r
+   |
+
+F841 [*] Local variable `e` is assigned to but never used
+  --> util.py:54:32
+   |
+52 |     try:
+53 |         public_key.verify(signature, data, ec.ECDSA(hashes.SHA256()))
+54 |     except InvalidSignature as e:
+   |                                ^
+55 |         print("Signature is invalid")
+56 |     except Exception as e:
+   |
+help: Remove assignment to unused variable `e`
+
+Found 5 errors.
+[*] 3 fixable with the `--fix` option (1 hidden fix can be enabled with the `--unsafe-fixes` option).
