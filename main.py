@@ -161,8 +161,9 @@ def get_latest_checkpoint(debug=False):
 def consistency(prev_checkpoint, debug=False):
     # verify that prev checkpoint is not empty
     latest_checkpoint = get_latest_checkpoint()
-    if not latest_checkpoint and debug:
-        print("Failed to fetch latest checkpoint")
+    if not latest_checkpoint:
+        if debug:
+            print("Failed to fetch latest checkpoint")
         return False
     size1 = prev_checkpoint["treeSize"]
     root1 = prev_checkpoint["rootHash"]
