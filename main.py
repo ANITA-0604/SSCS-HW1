@@ -196,9 +196,11 @@ def consistency(prev_checkpoint, debug=False):
     try:
         verify_consistency(DefaultHasher, size1, size2, proof, root1, root2)
         print("Consistency proof verified successfully!")
+        return True
     except Exception as e:
         print("Error: cannot verify consistency")
-    return True
+        return False
+
 
 
 def main():
