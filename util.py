@@ -1,3 +1,6 @@
+"""
+Utility functions for signature verification and key extraction.
+"""
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -5,11 +8,19 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
-from cryptography.exceptions import InvalidSignature
+from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 
 
-# extracts and returns public key from a given cert (in pem format)
 def extract_public_key(cert):
+    """Extract a PEM-encoded public key from a PEM certificate.
+
+    Args:
+        cert: Certificate in PEM-encoded bytes.
+
+    Returns:
+        bytes: Public key encoded in PEM (SubjectPublicKeyInfo).
+    """
+
     # read the certificate
     #    with open("cert.pem", "rb") as cert_file:
     #        cert_data = cert_file.read()
@@ -35,6 +46,20 @@ def extract_public_key(cert):
 
 
 def verify_artifact_signature(signature, public_key, artifact_filename):
+    """Verify an ECDSA SHA-256 signature for an artifact file.
+
+    Args:
+        signature: Raw signature bytes produced over the artifact content.
+        public_key: PEM-encoded public key bytes used to verify the signature.
+        artifact_filename: Path to the artifact file whose contents were signed.
+
+    Side Effects:
+        Prints a message if the signature is invalid or if an exception occurs.
+
+    Note:
+        This function does not return a value; it raises no exception on
+        verification failure and instead prints an error message.
+    """
     # load the public key
     # with open("cert_public.pem", "rb") as pub_key_file:
     #    public_key = load_pem_public_key(pub_key_file.read())
@@ -51,7 +76,7 @@ def verify_artifact_signature(signature, public_key, artifact_filename):
     # verify the signature
     try:
         public_key.verify(signature, data, ec.ECDSA(hashes.SHA256()))
-    except InvalidSignature as e:
+    except InvalidSignature:
         print("Signature is invalid")
-    except Exception as e:
+    except (ValueError, TypeError, UnsupportedAlgorithm) as e:
         print("Exception in verifying artifact signature:", e)
