@@ -1,22 +1,42 @@
+"""
+Rekor transparency log verifier.
+
+This module provides functionality to verify inclusion and consistency
+proofs from the Rekor transparency log.
+"""
 import argparse
+import base64
+import json
+
+import binascii
+import requests
+
+
 from util import extract_public_key, verify_artifact_signature
 from merkle_proof import (
     DefaultHasher,
     verify_consistency,
     verify_inclusion,
     compute_leaf_hash,
+    RootMismatchError,
 )
-import json
-import requests
-import base64
 
 REKOR_BASE_URL = "https://rekor.sigstore.dev/api/v1"
 
 
 def get_log_entry(log_index, debug=False):
-    # verify that log index value is sane
+    """Fetch a Rekor log entry by index.
+
+    Args:
+        log_index: Integer index of the entry in the Rekor log.
+        debug: Whether to print debug information.
+
+    Returns:
+        dict | None: JSON object returned by Rekor keyed by entry UUID,
+        or None if the request fails or no entry is found.
+    """
     try:
-        response = requests.get(f"{REKOR_BASE_URL}/log/entries?logIndex={log_index}")
+        response = requests.get(f"{REKOR_BASE_URL}/log/entries?logIndex={log_index}", timeout=5)
         response.raise_for_status()
         data = response.json()
         if not data:
@@ -26,10 +46,19 @@ def get_log_entry(log_index, debug=False):
         return data
     except requests.exceptions.RequestException as e:
         print("Request failed:", e)
+        return None
 
 
 def get_verification_proof(log_index, debug=False):
-    # verify that log index value is sane
+    """Retrieve the inclusion/verification proof for a log entry.
+
+    Args:
+        log_index: Integer index of the entry in the Rekor log.
+        debug: Whether to print debug information.
+
+    Returns:
+        dict | None: Proof payload for the entry (by UUID) or None on error.
+    """
     try:
         log_data = get_log_entry(log_index)
         if not log_data:
@@ -39,7 +68,7 @@ def get_verification_proof(log_index, debug=False):
 
         uuid = list(log_data.keys())[0]
 
-        response = requests.get(f"{REKOR_BASE_URL}/log/entries/{uuid}")
+        response = requests.get(f"{REKOR_BASE_URL}/log/entries/{uuid}", timeout=5)
         response.raise_for_status()
         proof_data = response.json()
 
@@ -48,22 +77,37 @@ def get_verification_proof(log_index, debug=False):
             print(json.dumps(proof_data, indent=4))
 
         return proof_data
-    except Exception as e:
-        print("Error: ", e)
+    except (requests.exceptions.RequestException, ValueError) as e:
+        print("Error fetching verification proof:", e)
+        return None
 
 
-def inclusion(log_index, artifact_filepath, debug=False):
-    # verify that log index and artifact filepath values are sane
+def inclusion(log_index, artifact_filepath, debug=False):  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+    """Verify the artifact’s signature and its inclusion proof.
+
+    Steps:
+    - Downloads the Rekor entry at `log_index`.
+    - Extracts the signature and certificate; derives the public key.
+    - Verifies the artifact signature.
+    - Fetches the inclusion proof and validates it against the computed leaf.
+
+    Args:
+        log_index: Rekor log index of the entry to verify.
+        artifact_filepath: Path to the artifact file whose signature is recorded.
+        debug: Whether to print debug information.
+
+    Returns:
+        bool: True if verification steps complete without errors; False on failure.
+    """
 
     try:
-        # Check if artifact file exists
-        with open(artifact_filepath, "rb") as f:
+        with open(artifact_filepath, "rb") as _:
             pass
     except FileNotFoundError:
         if debug:
             print(f"Artifact file not found: {artifact_filepath}")
         return False
-    except Exception as e:
+    except OSError as e:
         if debug:
             print(f"Error accessing artifact file: {e}")
         return False
@@ -144,26 +188,46 @@ def inclusion(log_index, artifact_filepath, debug=False):
 
         print("Offline root hash calculation for inclusion verified.")
 
-    except Exception as e:
-        print("Error: ", e)
+    except (ValueError, KeyError, binascii.Error, RootMismatchError) as e:
+        print("Inclusion verification error:", e)
+        return False
+    return True
 
 
 def get_latest_checkpoint(debug=False):
+    """Fetch the latest Rekor log checkpoint.
+
+    Args:
+        debug: Whether to print debug information.
+
+    Returns:
+        dict | None: Latest checkpoint JSON including `treeSize`, `rootHash`,
+        and `treeID`; None if the request fails.
+    """
     try:
-        response = requests.get(f"{REKOR_BASE_URL}/log")
+        response = requests.get(f"{REKOR_BASE_URL}/log", timeout=5)
         response.raise_for_status()
         data = response.json()
         if not data:
             if debug:
-                print(f"No entry found")
+                print('No entry found')
             return None
         return data
     except requests.exceptions.RequestException as e:
         print("Request failed:", e)
+        return None
 
 
 def consistency(prev_checkpoint, debug=False):
-    # verify that prev checkpoint is not empty
+    """Verify consistency between a previous and the latest checkpoint.
+
+    Args:
+        prev_checkpoint: Dict with keys `treeID`, `treeSize`, and `rootHash`.
+        debug: Whether to print debug information.
+
+    Returns:
+        bool: True if the consistency proof verifies; False otherwise.
+    """
     latest_checkpoint = get_latest_checkpoint()
     if not latest_checkpoint:
         if debug:
@@ -174,7 +238,7 @@ def consistency(prev_checkpoint, debug=False):
 
     size2 = latest_checkpoint["treeSize"]
     root2 = latest_checkpoint["rootHash"]
-    treeID = latest_checkpoint["treeID"]
+    tree_id = latest_checkpoint["treeID"]
 
     if debug:
         print(f"Prev tree size: {size1}, Prev root: {root1}")
@@ -182,7 +246,7 @@ def consistency(prev_checkpoint, debug=False):
 
     # Fetch consistency proof from Rekor
     response = requests.get(
-        f"{REKOR_BASE_URL}/log/proof?firstSize={size1}&lastSize={size2}&treeID={treeID}"
+        f"{REKOR_BASE_URL}/log/proof?firstSize={size1}&lastSize={size2}&treeID={tree_id}", timeout=5
     )
     response.raise_for_status()
     proof_data = response.json()
@@ -201,13 +265,21 @@ def consistency(prev_checkpoint, debug=False):
         verify_consistency(DefaultHasher, size1, size2, proof, root1, root2)
         print("Consistency proof verified successfully!")
         return True
-    except Exception as e:
-        print("Error: cannot verify consistency")
+    except (ValueError, RootMismatchError) as e:
+        print("Error: cannot verify consistency:", e)
         return False
 
 
 
 def main():
+    """Command-line entry for Rekor verification utilities.
+
+    Parses arguments to:
+    - Print the latest checkpoint (`--checkpoint`).
+    - Verify entry inclusion for an artifact (`--inclusion` with `--artifact`).
+    - Verify consistency from a provided checkpoint (`--consistency` with
+      `--tree-id`, `--tree-size`, `--root-hash`).
+    """
     debug = False
     parser = argparse.ArgumentParser(description="Rekor Verifier")
     parser.add_argument(
