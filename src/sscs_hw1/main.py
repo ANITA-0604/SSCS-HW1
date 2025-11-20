@@ -12,8 +12,8 @@ import binascii
 import requests
 
 
-from util import extract_public_key, verify_artifact_signature
-from merkle_proof import (
+from sscs_hw1.util import extract_public_key, verify_artifact_signature
+from sscs_hw1.merkle_proof import (
     DefaultHasher,
     verify_consistency,
     verify_inclusion,
