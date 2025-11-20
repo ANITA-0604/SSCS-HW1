@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 import datetime
 
-from merkle_proof import (
+from sscs_hw1.merkle_proof import (
     DefaultHasher,
     compute_leaf_hash,
     verify_match,
@@ -21,8 +21,8 @@ from merkle_proof import (
     verify_inclusion,
     verify_consistency
 )
-from util import extract_public_key, verify_artifact_signature
-from main import main, get_log_entry, get_latest_checkpoint, inclusion, consistency
+from sscs_hw1.util import extract_public_key, verify_artifact_signature
+from sscs_hw1.main import main, get_log_entry, get_latest_checkpoint, inclusion, consistency
 #from merkle_proof import DefaultHasher, verify_consistency, verify_inclusion, compute_leaf_hash, RootMismatchError
 
 def test_compute_leaf_hash():
@@ -86,19 +86,19 @@ def test_verify_artifact_signature_invalid(tmp_path):
 
 def test_consistency_no_checkpoint(monkeypatch):
     # make get_latest_checkpoint return None
-    monkeypatch.setattr("main.get_latest_checkpoint", lambda *a, **kw: None)
+    monkeypatch.setattr("sscs_hw1.main.get_latest_checkpoint", lambda *a, **kw: None)
     result = consistency({"treeID": "x", "treeSize": 1, "rootHash": "abc"})
     assert result is False
 
 def test_inclusion_get_log_entry_failure(monkeypatch, tmp_path):
-    monkeypatch.setattr("main.get_log_entry", lambda *a, **kw: None)
+    monkeypatch.setattr("sscs_hw1.main.get_log_entry", lambda *a, **kw: None)
     file_path = tmp_path / "artifact.txt"
     file_path.write_text("fake")
     result = inclusion(10, file_path)
     assert result is False
 
 def test_extract_public_key_invalid(monkeypatch):
-    from util import extract_public_key
+    
     with pytest.raises(Exception):
         extract_public_key(b"invalid cert data")
 
@@ -136,7 +136,7 @@ def test_verify_inclusion_success():
 
 def test_consistency_value_error(monkeypatch):
 
-    monkeypatch.setattr("main.get_latest_checkpoint", lambda *a, **kw: {"treeID": "x", "treeSize": 2, "rootHash": "abc"})
+    monkeypatch.setattr("sscs_hw1.main.get_latest_checkpoint", lambda *a, **kw: {"treeID": "x", "treeSize": 2, "rootHash": "abc"})
     monkeypatch.setattr("requests.get", lambda *a, **kw: type("Fake", (), {"raise_for_status": lambda *a, **kw: None, "json": lambda *a, **kw: {"hashes": []}})())
     result = consistency({"treeID": "x", "treeSize": 1, "rootHash": "abc"})
     assert result is False
@@ -148,15 +148,10 @@ def test_get_latest_checkpoint_exception(monkeypatch):
     result = get_latest_checkpoint()
     assert result is None
 
-def test_consistency_value_error(monkeypatch):
-    monkeypatch.setattr("main.get_latest_checkpoint", lambda *a, **kw: {"treeID": "x", "treeSize": 2, "rootHash": "abc"})
-    monkeypatch.setattr("requests.get", lambda *a, **kw: type("Fake", (), {"raise_for_status": lambda *a, **kw: None, "json": lambda *a, **kw: {"hashes": []}})())
-    result = consistency({"treeID": "x", "treeSize": 1, "rootHash": "abc"})
-    assert result is False
 
 def test_inclusion_invalid_body(monkeypatch, tmp_path):
     # simulate invalid base64 in log body
-    monkeypatch.setattr("main.get_log_entry", lambda *a, **kw: {"uuid": {"body": "!!!"}})
+    monkeypatch.setattr("sscs_hw1.main.get_log_entry", lambda *a, **kw: {"uuid": {"body": "!!!"}})
     f = tmp_path / "a.txt"
     f.write_text("fake")
     result = inclusion(1, f, debug=True)
@@ -226,18 +221,18 @@ def test_inclusion_success(monkeypatch, tmp_path):
         "logIndex": 1, "rootHash": "a"*64, "treeSize": 1, "hashes": []
     }}}}
 
-    monkeypatch.setattr("main.get_log_entry", lambda *a, **kw: log_entry)
-    monkeypatch.setattr("main.get_verification_proof", lambda *a, **kw: proof)
-    monkeypatch.setattr("main.extract_public_key", lambda cert: b"fake_pubkey")
-    monkeypatch.setattr("util.verify_artifact_signature", lambda sig, key, path: None)
-    monkeypatch.setattr("main.verify_inclusion", lambda *a, **kw: True)
+    monkeypatch.setattr("sscs_hw1.main.get_log_entry", lambda *a, **kw: log_entry)
+    monkeypatch.setattr("sscs_hw1.main.get_verification_proof", lambda *a, **kw: proof)
+    monkeypatch.setattr("sscs_hw1.main.extract_public_key", lambda cert: b"fake_pubkey")
+    monkeypatch.setattr("sscs_hw1.util.verify_artifact_signature", lambda sig, key, path: None)
+    monkeypatch.setattr("sscs_hw1.main.verify_inclusion", lambda *a, **kw: True)
 
     f = tmp_path / "f.txt"
     f.write_text("ok")
     assert inclusion(1, f, debug=True) is True
 
 def test_consistency_success(monkeypatch):
-    monkeypatch.setattr("main.get_latest_checkpoint", lambda *a, **kw: {
+    monkeypatch.setattr("sscs_hw1.main.get_latest_checkpoint", lambda *a, **kw: {
         "treeID": "x", "treeSize": 2, "rootHash": "b"*64
     })
     fake = type("Fake", (), {
@@ -246,5 +241,5 @@ def test_consistency_success(monkeypatch):
     })()
     monkeypatch.setattr("requests.get", lambda *a, **kw: fake)
     # patch verify_consistency inside main (not merkle_proof)
-    monkeypatch.setattr("main.verify_consistency", lambda *a, **kw: None)
+    monkeypatch.setattr("sscs_hw1.main.verify_consistency", lambda *a, **kw: None)
     assert consistency({"treeID": "x", "treeSize": 1, "rootHash": "a"*64}) is True
