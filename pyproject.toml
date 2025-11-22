@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sscs-hw1"
-version = "4.0.1"
+version = "4.0.2"
 description = "Software Supply Chain Security project using Sigstore Rekor"
 authors = ["ANITA-0604 <anita900604@gmail.com>"]
 license = "MIT"
@@ -40,4 +40,4 @@ pythonpath = ["src"]
 
 
 [tool.poetry.scripts]
-sscs-hw1 = "sscs_hw1.main:main"
+python-rekor-monitor = "sscs_hw1.main:main"
