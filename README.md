@@ -1,6 +1,7 @@
 # SSCS-HW1 - Software Supply Chain Security Assignment 1
 
 [![CI](https://github.com/ANITA-0604/SSCS-HW1/actions/workflows/ci.yml/badge.svg)](https://github.com/ANITA-0604/SSCS-HW1/actions/workflows/ci.yml)
+[![Scorecard](https://github.com/ANITA-0604/SSCS-HW1/actions/workflows/scorecard.yml/badge.svg)](https://github.com/ANITA-0604/SSCS-HW1/actions/workflows/scorecard.yml)
 
 ## Overview
 
