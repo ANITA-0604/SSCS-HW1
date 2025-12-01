@@ -1,5 +1,7 @@
 # SSCS-HW1 - Software Supply Chain Security Assignment 1
 
+[![CI](https://github.com/ANITA-0604/SSCS-HW1/actions/workflows/ci.yml/badge.svg)](https://github.com/ANITA-0604/SSCS-HW1/actions/workflows/ci.yml)
+
 ## Overview
 
 This project implements a software supply chain security workflow using Sigstore’s Rekor transparency log.
