@@ -110,8 +110,6 @@ def test_inclusion_get_log_entry_failure(monkeypatch, tmp_path):
     assert result is False
 
 
-
-
 def test_verify_artifact_signature_invalid_pem(tmp_path):
     path = tmp_path / "artifact.txt"
     path.write_text("hello")
