@@ -3,7 +3,7 @@ name: CD
 on:
   push:
     tags:
-      - "v5.1.0"   
+      - "v5.1.1"   
 
 jobs:
   cd:
@@ -37,7 +37,7 @@ jobs:
 
       - name: Generate SBOM
         run: |
-          poetry run cyclonedx-py -j -o cyclonedx-sbom.json
+          poetry run cyclonedx-py poetry -o cyclonedx-sbom.json
 
       - name: Attest SBOM
         uses: actions/attest-sbom@v1
