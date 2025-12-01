@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/ANITA-0604/SSCS-HW1/actions/workflows/ci.yml/badge.svg)](https://github.com/ANITA-0604/SSCS-HW1/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/ANITA-0604/SSCS-HW1/badge)](https://securityscorecards.dev/viewer/?uri=github.com/ANITA-0604/SSCS-HW1)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11530/badge)](https://www.bestpractices.dev/projects/11530)
 
 ## Overview
 
