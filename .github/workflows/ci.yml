@@ -36,7 +36,7 @@ jobs:
 
       - name: Run Bandit (SAST scan)
         run: |
-          poetry run bandit -r src
+          poetry run bandit -r sscs_hw1
 
       - name: Secret Scan with TruffleHog
         uses: trufflesecurity/trufflehog@main
