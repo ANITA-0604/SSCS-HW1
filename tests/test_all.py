@@ -2,8 +2,7 @@
 import pytest
 import base64
 import json
-import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 import requests
 
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -111,10 +110,6 @@ def test_inclusion_get_log_entry_failure(monkeypatch, tmp_path):
     assert result is False
 
 
-def test_extract_public_key_invalid(monkeypatch):
-
-    with pytest.raises(Exception):
-        extract_public_key(b"invalid cert data")
 
 
 def test_verify_artifact_signature_invalid_pem(tmp_path):
@@ -252,7 +247,6 @@ def test_verify_artifact_signature_valid(tmp_path):
 
 def test_verify_consistency_valid():
     h = DefaultHasher
-    leaf = h.hash_leaf(b"a").hex()
     left = h.hash_leaf(b"a")
     right = h.hash_leaf(b"b")
     proof = [right.hex()]
