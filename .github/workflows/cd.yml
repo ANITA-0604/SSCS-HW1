@@ -42,7 +42,7 @@ jobs:
       - name: Attest SBOM
         uses: actions/attest-sbom@v1
         with:
-          sbom-path: sbom.json
+          sbom-path: cyclonedx-sbom.json
           subject-path: dist
 
       - name: Upload Artifacts
@@ -51,7 +51,7 @@ jobs:
           name: release-artifacts
           path: |
             dist/*
-            sbom.json
+            cyclonedx-sbom.json
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -59,6 +59,6 @@ jobs:
           tag_name: ${{ github.ref_name }}
           files: |
             dist/*
-            sbom.json
+            cyclonedx-sbom.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
