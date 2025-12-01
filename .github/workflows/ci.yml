@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: |
+          pip install poetry
+
+      - name: Install dependencies
+        run: |
+          poetry install --with dev
+
+      # --- Formatter (Black) ---
+      - name: Run Black (format check)
+        run: |
+          poetry run black --check .
+
+      - name: Run Ruff (lint)
+        run: |
+          poetry run ruff check .
+
+      - name: Run Bandit (SAST scan)
+        run: |
+          poetry run bandit -r src
+
+      - name: Secret Scan with TruffleHog
+        uses: trufflesecurity/trufflehog@v3
+        with:
+          path: .
+          fail: "true"
+
+      - name: Run Tests with Coverage
+        run: |
+          poetry run pytest --cov=src --cov-report=term-missing
