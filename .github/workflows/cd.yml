@@ -1,0 +1,64 @@
+name: CD
+
+on:
+  push:
+    tags:
+      - "v*.*.*"   
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write       
+      id-token: write       
+      attestations: write   
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: |
+          pip install poetry
+
+      - name: Install dependencies
+        run: |
+          poetry install --with dev
+
+      - name: Build Project
+        run: |
+          poetry build
+
+      - name: Generate SBOM
+        run: |
+          poetry run cyclonedx-py -j -o sbom.json
+
+      - name: Attest SBOM
+        uses: actions/attest-sbom@v1
+        with:
+          sbom-path: sbom.json
+          subject-path: dist
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            dist/*
+            sbom.json
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: |
+            dist/*
+            sbom.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
