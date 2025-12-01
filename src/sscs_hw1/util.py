@@ -1,6 +1,7 @@
 """
 Utility functions for signature verification and key extraction.
 """
+
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -67,8 +68,6 @@ def verify_artifact_signature(signature, public_key, artifact_filename):
     # load the signature
     #    with open("hello.sig", "rb") as sig_file:
     #        signature = sig_file.read()
-
-    
 
     # verify the signature
     try:

@@ -4,6 +4,7 @@ Rekor transparency log verifier.
 This module provides functionality to verify inclusion and consistency
 proofs from the Rekor transparency log.
 """
+
 import argparse
 import base64
 import json
@@ -36,7 +37,9 @@ def get_log_entry(log_index, debug=False):
         or None if the request fails or no entry is found.
     """
     try:
-        response = requests.get(f"{REKOR_BASE_URL}/log/entries?logIndex={log_index}", timeout=5)
+        response = requests.get(
+            f"{REKOR_BASE_URL}/log/entries?logIndex={log_index}", timeout=5
+        )
         response.raise_for_status()
         data = response.json()
         if not data:
@@ -82,7 +85,9 @@ def get_verification_proof(log_index, debug=False):
         return None
 
 
-def inclusion(log_index, artifact_filepath, debug=False):  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+def inclusion(
+    log_index, artifact_filepath, debug=False
+):  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     """Verify the artifact’s signature and its inclusion proof.
 
     Steps:
@@ -210,7 +215,7 @@ def get_latest_checkpoint(debug=False):
         data = response.json()
         if not data:
             if debug:
-                print('No entry found')
+                print("No entry found")
             return None
         return data
     except requests.exceptions.RequestException as e:
@@ -246,7 +251,8 @@ def consistency(prev_checkpoint, debug=False):
 
     # Fetch consistency proof from Rekor
     response = requests.get(
-        f"{REKOR_BASE_URL}/log/proof?firstSize={size1}&lastSize={size2}&treeID={tree_id}", timeout=5
+        f"{REKOR_BASE_URL}/log/proof?firstSize={size1}&lastSize={size2}&treeID={tree_id}",
+        timeout=5,
     )
     response.raise_for_status()
     proof_data = response.json()
@@ -268,7 +274,6 @@ def consistency(prev_checkpoint, debug=False):
     except (ValueError, RootMismatchError) as e:
         print("Error: cannot verify consistency:", e)
         return False
-
 
 
 def main():

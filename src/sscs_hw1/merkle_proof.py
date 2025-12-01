@@ -3,6 +3,7 @@ Merkle tree proof verification utilities.
 
 Implements RFC 6962 compliance for Merkle tree operations.
 """
+
 import hashlib
 import binascii
 import base64
@@ -18,6 +19,7 @@ class Hasher:
     Provides helpers to compute leaf and node hashes using an underlying
     hash function (SHA-256 by default) with RFC6962 prefixes.
     """
+
     def __init__(self, hash_func=hashlib.sha256):
         """Initialize the hasher.
 
@@ -72,7 +74,9 @@ class Hasher:
 DefaultHasher = Hasher(hashlib.sha256)
 
 
-def verify_consistency(hasher, size1, size2, proof, root1, root2):  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
+def verify_consistency(
+    hasher, size1, size2, proof, root1, root2
+):  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
     """Verify a consistency proof between two tree snapshots.
 
     Args:
@@ -234,6 +238,7 @@ def chain_border_right(hasher, seed, proof):
 
 class RootMismatchError(Exception):
     """Error raised when a calculated root does not match the expected root."""
+
     def __init__(self, expected_root, calculated_root):
         self.expected_root = binascii.hexlify(bytearray(expected_root))
         self.calculated_root = binascii.hexlify(bytearray(calculated_root))
@@ -281,7 +286,9 @@ def root_from_inclusion_proof(hasher, index, size, leaf_hash, proof):
     return res
 
 
-def verify_inclusion(hasher, index, size, leaf_hash, proof, root, debug=False):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+def verify_inclusion(
+    hasher, index, size, leaf_hash, proof, root, debug=False
+):  # pylint: disable=too-many-arguments,too-many-positional-arguments
     """Verify an inclusion proof for a leaf and expected root.
 
     Args:
