@@ -39,7 +39,7 @@ jobs:
           poetry run bandit -r src
 
       - name: Secret Scan with TruffleHog
-        uses: trufflesecurity/trufflehog@v3
+        uses: trufflesecurity/trufflehog@main
         with:
           path: .
           fail: "true"
