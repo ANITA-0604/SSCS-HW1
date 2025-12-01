@@ -3,7 +3,7 @@ name: CD
 on:
   push:
     tags:
-      - "v*.*.*"   
+      - "v5.1.0"   
 
 jobs:
   cd:
