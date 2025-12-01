@@ -15,7 +15,9 @@ on:
     branches: [ "main" ]
 
 # Declare default permissions as read only.
-permissions: read-all
+permissions: 
+  id-token: write
+  contents: read
 
 jobs:
   analysis:
@@ -29,7 +31,7 @@ jobs:
       # Needed to publish results and get a badge (see publish_results below).
       id-token: write
       # Uncomment the permissions below if installing in a private repository.
-      # contents: read
+      contents: read
       # actions: read
 
     steps:
@@ -43,6 +45,8 @@ jobs:
         with:
           results_file: results.sarif
           results_format: sarif
+          publish_results: true
+
           # (Optional) "write" PAT token. Uncomment the `repo_token` line below if:
           # - you want to enable the Branch-Protection check on a *public* repository, or
           # - you are installing Scorecard on a *private* repository
